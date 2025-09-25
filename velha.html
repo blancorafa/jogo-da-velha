@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Jogo da Velha</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Patrick+Hand&display=swap');
+
+            body {
+                background-color: #ffe6a7;
+                background-image: url('https://www.transparenttextures.com/patterns/az-subtle.png');
+                color: #5C4033;
+                font-family: 'Patrick Hand', cursive;
+                margin: auto;
+                position: relative;
+            }
+            .casa{
+                background-color: #E3D9C9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 3rem;
+                cursor: url('https://icons.iconarchive.com/icons/google/noto-emoji-food-drink/32/32414-frying-pan-icon.png'), auto;
+                border: 4px solid #A66352;
+                border-radius: 10px;
+                color: #A66352;
+                font-family: 'Gochi Hand', cursive;
+                box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+                transition: all 0.2s ease-in-out;  /* esse eu que pesquisei e achei */
+            }
+            .casa:hover{
+                transform: scale(0.95);
+                background-color: #ebebc5;/* esse eu que pesquisei e achei */
+                border-color: #a1887f;
+            }
+            .tabuleiro{
+                display: grid;
+                grid-template-columns: repeat(3,100px);
+                grid-template-rows: repeat(3,100px);
+                gap: 15px;
+                margin: 20px auto;
+                width: max-content;
+                padding: 10px;
+                border: 7px dashed #A66352;
+                background-color: #faebd7;
+                border-radius: 15px;
+            }
+            .titulo{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Patrick Hand', cursive;
+                font-size: 2.5rem;
+                color: #A66352;
+                border: 5px dashed #A66352;
+                border-radius: 20px;
+                width: max-content;
+                margin: 15px auto;
+                padding: 10px;
+                background-color: #d4a373;
+                margin-top: 40px;
+                margin-bottom: 25px;
+            }
+            .img1{
+                display: flex;
+                width: 350px;
+                float: left;
+                transform: scaleX(-1); /* esse eu que pesquisei e achei */
+                pointer-events: none;
+            }
+            .img2{
+                display: flex;
+                width: 350px ;
+                float: right;
+                pointer-events: none; /* faz com que não tenha influencia do click*/
+            }
+        </style>
+    </head>
+    <body>
+        <h1 class="titulo">Jogo da Velha</h1>
+        <img src="imagens/velha-Photoroom.png" class="img1" alt="uma velhinha em desenho cartoon">
+        <img src="imagens/velha-Photoroom.png" class="img2" alt="uma velhinha em desenho cartoon">
+        <div class="tabuleiro">
+            <div class="casa"></div>
+            <div class="casa"></div>
+            <div class="casa"></div>
+            <div class="casa"></div>
+            <div class="casa"></div>
+            <div class="casa"></div>
+            <div class="casa"></div>
+            <div class="casa"></div>
+            <div class="casa"></div>
+        </div>
+        <script>
+            const casas = document.querySelectorAll(".casa");
+            let jogador = "x";
+
+            const combinacoes = [
+                [0,1,2],[3,4,5],[6,7,8],
+                [0,3,6],[1,4,7],[2,5,8],
+                [0,4,8],[2,4,6]
+            ]
+
+            casas.forEach(casa =>  {
+                casa.addEventListener('click', clique);})
+            
+                function clique(event){
+                const casa = event.target;
+            
+                if(casa.textContent === "") {
+                    casa.textContent = jogador
+                    jogador = (jogador === "x") ? "o" : "x";
+                }
+            }
+
+            //uma ideia boa é de add o botao de reiniciar e o mostrador de player se é o X ou o O
+
+        </script>
+    </body>
+</html>
