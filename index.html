@@ -14,8 +14,7 @@
                 font-family: 'Patrick Hand', cursive;
                 margin: auto;
                 position: relative;
-                /* Adicionei centralização para melhor visualização dos novos elementos */
-                text-align: center;
+                text-align: center; /* Centralização geral para os novos elementos */
             }
             .casa{
                 background-color: #E3D9C9;
@@ -36,7 +35,7 @@
                 background-color: #ebebc5;
                 border-color: #a1887f;
             }
-            /* Adicionei um estilo para destacar a casa vencedora */
+            /* Estilo para destacar a casa vencedora */
             .vencedora {
                 background-color: #a3c9a8; /* Cor de destaque para a vitória */
             }
@@ -116,6 +115,23 @@
             #reiniciar:hover {
                 background-color: #8c5243;
             }
+            
+            /* Novo estilo para o Placar de Vitórias */
+            .placar {
+                display: flex;
+                justify-content: center;
+                gap: 40px;
+                margin-top: 20px;
+                font-family: 'Gochi Hand', cursive;
+                font-size: 2rem;
+                color: #A66352;
+                width: max-content;
+                margin: 15px auto;
+                padding: 10px 20px;
+                border: 3px solid #A66352;
+                border-radius: 10px;
+                background-color: #faebd7;
+            }
         </style>
     </head>
     <body>
@@ -123,11 +139,11 @@
         <img src="imagens/velha-Photoroom.png" class="img1" alt="uma velhinha em desenho cartoon">
         <img src="imagens/velha-Photoroom.png" class="img2" alt="uma velhinha em desenho cartoon">
         
-        <div class="controles">
-            <div id="status">Vez do Jogador: X</div>
-            <button id="reiniciar">Reiniciar Jogo</button>
+        <div class="placar">
+            <span id="scoreX">X: 0</span>
+            <span id="scoreO">O: 0</span>
         </div>
-        
+
         <div class="tabuleiro">
             <div class="casa" data-index="0"></div>
             <div class="casa" data-index="1"></div>
@@ -139,121 +155,147 @@
             <div class="casa" data-index="7"></div>
             <div class="casa" data-index="8"></div>
         </div>
+        
+        <div class="controles">
+            <div id="status">Vez do Jogador: X</div>
+            <button id="reiniciar">Reiniciar Jogo</button>
+        </div>
+
+        <audio id="somVitoria" src="caminho/para/seu/som/vitoria.mp3" preload="auto"></audio> 
+        
         <script>
             // Referências aos elementos do DOM
             const casas = document.querySelectorAll(".casa");
             const statusDisplay = document.getElementById("status");
             const botaoReiniciar = document.getElementById("reiniciar");
+            const scoreXDisplay = document.getElementById("scoreX");
+            const scoreODisplay = document.getElementById("scoreO");
+            const somVitoria = document.getElementById("somVitoria");
 
-            // Variáveis de estado do jogo
-            let tabuleiro = Array(9).fill(null); // Representação lógica do tabuleiro
+            // Variáveis de estado do jogo e placar
+            let tabuleiro = Array(9).fill(null);
             let jogadorAtual = "X";
-            let jogoAtivo = true; // Flag para saber se o jogo pode continuar
+            let jogoAtivo = true;
+            let placar = { 'X': 0, 'O': 0 }; // Novo objeto para armazenar o placar
 
             // Combinações vencedoras (índices no array 'tabuleiro')
             const combinacoesVencedoras = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
-                [0, 4, 8], [2, 4, 6]             // Diagonais
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
             ];
 
             // Inicialização: Adiciona event listeners e atualiza o placar
             function inicializarJogo() {
                 casas.forEach((casa, index) =>  {
-                    // Usa o atributo 'data-index' para referenciar a posição
                     casa.setAttribute('data-index', index);
                     casa.addEventListener('click', cliqueCasa);
                     casa.textContent = "";
-                    casa.classList.remove('vencedora'); // Remove qualquer destaque de vitória
+                    casa.classList.remove('vencedora');
                 });
                 botaoReiniciar.addEventListener('click', reiniciarJogo);
+                // Inicia o placar e o status
+                atualizarPlacarVisual();
                 statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
             }
 
             // --- Lógica Principal do Jogo ---
 
-            // Função chamada ao clicar em uma casa
             function cliqueCasa(event) {
                 const casa = event.target;
                 const index = parseInt(casa.getAttribute('data-index'));
 
-                // Condição para garantir que: 
-                // 1. O jogo ainda esteja ativo
-                // 2. A casa clicada esteja vazia
                 if (tabuleiro[index] === null && jogoAtivo) {
-                    // 1. Atualiza o estado lógico
                     tabuleiro[index] = jogadorAtual;
-                    // 2. Atualiza o DOM (visual)
                     casa.textContent = jogadorAtual;
                     
-                    // 3. Checa o resultado
                     if (checarResultado()) {
-                        // Se houver vencedor ou empate, o fluxo é encerrado na função checarResultado
                         return;
                     }
 
-                    // 4. Troca o jogador
                     trocarJogador();
                 }
             }
 
-            // Checa se houve vitória ou empate
             function checarResultado() {
                 let venceu = false;
                 let combinacaoVencedora = [];
 
-                // Verifica todas as combinações vencedoras
                 for (let i = 0; i < combinacoesVencedoras.length; i++) {
                     const [a, b, c] = combinacoesVencedoras[i];
                     
                     if (tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]) {
                         venceu = true;
                         combinacaoVencedora = [a, b, c];
-                        break; // Sai do loop assim que encontrar uma combinação vencedora
+                        break;
                     }
                 }
 
                 if (venceu) {
+                    // 1. Atualiza o placar
+                    placar[jogadorAtual]++;
+                    atualizarPlacarVisual();
+                    
+                    // 2. Toca o som
+                    tocarSomVitoria();
+                    
+                    // 3. Finaliza
                     finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
                     destacarVitoria(combinacaoVencedora);
                     return true;
                 } 
                 
-                // Checa por Empate (se não venceu e o tabuleiro está cheio)
+                // Checa por Empate
                 if (!tabuleiro.includes(null)) {
                     finalizarJogo("Empate! 🤝");
                     return true;
                 }
 
-                return false; // O jogo continua
+                return false;
             }
             
-            // Troca o jogador atual e atualiza o placar
             function trocarJogador() {
                 jogadorAtual = (jogadorAtual === "X") ? "O" : "X";
                 statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
             }
             
-            // Finaliza o jogo (atualiza o status e desativa o clique)
             function finalizarJogo(mensagem) {
                 statusDisplay.textContent = mensagem;
                 jogoAtivo = false;
             }
 
-            // Destaca as casas da combinação vencedora
             function destacarVitoria(combinacao) {
                 combinacao.forEach(index => {
                     casas[index].classList.add('vencedora');
                 });
             }
+            
+            // --- Novas Funções ---
 
-            // Reinicia o jogo para o estado inicial
+            // Atualiza a exibição do placar (X: 0, O: 0)
+            function atualizarPlacarVisual() {
+                scoreXDisplay.textContent = `X: ${placar.X}`;
+                scoreODisplay.textContent = `O: ${placar.O}`;
+            }
+
+            // Toca o som de vitória
+            function tocarSomVitoria() {
+                if (somVitoria) {
+                    somVitoria.pause(); // Para caso esteja tocando
+                    somVitoria.currentTime = 0; // Volta para o início
+                    somVitoria.play().catch(error => {
+                        // Captura e exibe erro caso o navegador bloqueie o autoplay
+                        console.error("Erro ao tentar tocar o áudio. Tente interagir com a página primeiro.", error);
+                    });
+                }
+            }
+
+            // Reinicia o jogo (resetando apenas o tabuleiro e o estado)
             function reiniciarJogo() {
-                tabuleiro.fill(null); // Limpa o estado lógico
-                jogadorAtual = "X";   // Começa com 'X' novamente
-                jogoAtivo = true;     // Ativa o jogo
+                tabuleiro.fill(null);
+                jogadorAtual = "X";
+                jogoAtivo = true;
                 
-                // Limpa o visual do tabuleiro
                 casas.forEach(casa => {
                     casa.textContent = "";
                     casa.classList.remove('vencedora');
@@ -262,7 +304,7 @@
                 statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
             }
 
-            // Chama a função inicializadora para configurar o jogo ao carregar a página
+            // Inicia o jogo
             inicializarJogo();
 
         </script>
