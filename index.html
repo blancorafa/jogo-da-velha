@@ -14,6 +14,8 @@
                 font-family: 'Patrick Hand', cursive;
                 margin: auto;
                 position: relative;
+                /* Adicionei centralização para melhor visualização dos novos elementos */
+                text-align: center;
             }
             .casa{
                 background-color: #E3D9C9;
@@ -27,13 +29,18 @@
                 color: #A66352;
                 font-family: 'Gochi Hand', cursive;
                 box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-                transition: all 0.2s ease-in-out;  /* esse eu que pesquisei e achei */
+                transition: all 0.2s ease-in-out;
             }
             .casa:hover{
                 transform: scale(0.95);
-                background-color: #ebebc5;/* esse eu que pesquisei e achei */
+                background-color: #ebebc5;
                 border-color: #a1887f;
             }
+            /* Adicionei um estilo para destacar a casa vencedora */
+            .vencedora {
+                background-color: #a3c9a8; /* Cor de destaque para a vitória */
+            }
+
             .tabuleiro{
                 display: grid;
                 grid-template-columns: repeat(3,100px);
@@ -66,14 +73,48 @@
                 display: flex;
                 width: 350px;
                 float: left;
-                transform: scaleX(-1); /* esse eu que pesquisei e achei */
+                transform: scaleX(-1);
                 pointer-events: none;
             }
             .img2{
                 display: flex;
                 width: 350px ;
                 float: right;
-                pointer-events: none; /* faz com que não tenha influencia do click*/
+                pointer-events: none;
+            }
+
+            /* Estilos adicionados para os novos elementos de controle e placar */
+            .controles {
+                margin: 20px auto;
+                width: max-content;
+                padding: 15px;
+                border: 4px solid #A66352;
+                border-radius: 10px;
+                background-color: #faebd7;
+            }
+
+            #status {
+                font-size: 1.8rem;
+                margin-bottom: 10px;
+                color: #5C4033;
+                font-family: 'Patrick Hand', cursive;
+            }
+
+            #reiniciar {
+                padding: 10px 20px;
+                font-size: 1.5rem;
+                cursor: pointer;
+                background-color: #A66352;
+                color: #faebd7;
+                border: none;
+                border-radius: 5px;
+                font-family: 'Gochi Hand', cursive;
+                transition: background-color 0.2s;
+                box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            }
+
+            #reiniciar:hover {
+                background-color: #8c5243;
             }
         </style>
     </head>
@@ -81,57 +122,148 @@
         <h1 class="titulo">Jogo da Velha</h1>
         <img src="imagens/velha-Photoroom.png" class="img1" alt="uma velhinha em desenho cartoon">
         <img src="imagens/velha-Photoroom.png" class="img2" alt="uma velhinha em desenho cartoon">
+        
+        <div class="controles">
+            <div id="status">Vez do Jogador: X</div>
+            <button id="reiniciar">Reiniciar Jogo</button>
+        </div>
+        
         <div class="tabuleiro">
-            <div class="casa"></div>
-            <div class="casa"></div>
-            <div class="casa"></div>
-            <div class="casa"></div>
-            <div class="casa"></div>
-            <div class="casa"></div>
-            <div class="casa"></div>
-            <div class="casa"></div>
-            <div class="casa"></div>
+            <div class="casa" data-index="0"></div>
+            <div class="casa" data-index="1"></div>
+            <div class="casa" data-index="2"></div>
+            <div class="casa" data-index="3"></div>
+            <div class="casa" data-index="4"></div>
+            <div class="casa" data-index="5"></div>
+            <div class="casa" data-index="6"></div>
+            <div class="casa" data-index="7"></div>
+            <div class="casa" data-index="8"></div>
         </div>
         <script>
+            // Referências aos elementos do DOM
             const casas = document.querySelectorAll(".casa");
-            let jogador = "x";
+            const statusDisplay = document.getElementById("status");
+            const botaoReiniciar = document.getElementById("reiniciar");
 
-            const combinacoes = [
-                [0,1,2],[3,4,5],[6,7,8],
-                [0,3,6],[1,4,7],[2,5,8],
-                [0,4,8],[2,4,6]
-            ]
+            // Variáveis de estado do jogo
+            let tabuleiro = Array(9).fill(null); // Representação lógica do tabuleiro
+            let jogadorAtual = "X";
+            let jogoAtivo = true; // Flag para saber se o jogo pode continuar
 
-            casas.forEach(casa =>  {
-                casa.addEventListener('click', clique);})
-            
-                function clique(event){
-                    const casa = event.target;
-                    if(casa.textContent === "") {
-                        casa.textContent = jogador;
-                        if(checarVencedor()) {
-                            alert("parabens!!! O jogador " + jogador + " venceu!!!")
-                        }else{
-                            jogador = (jogador === "x") ? "o" : "x";
-                        }
-                }
+            // Combinações vencedoras (índices no array 'tabuleiro')
+            const combinacoesVencedoras = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
+                [0, 4, 8], [2, 4, 6]             // Diagonais
+            ];
+
+            // Inicialização: Adiciona event listeners e atualiza o placar
+            function inicializarJogo() {
+                casas.forEach((casa, index) =>  {
+                    // Usa o atributo 'data-index' para referenciar a posição
+                    casa.setAttribute('data-index', index);
+                    casa.addEventListener('click', cliqueCasa);
+                    casa.textContent = "";
+                    casa.classList.remove('vencedora'); // Remove qualquer destaque de vitória
+                });
+                botaoReiniciar.addEventListener('click', reiniciarJogo);
+                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
             }
 
-            function checarVencedor(){
-                for(let i = 0; i < combinacoes.length; i++){
-                    const [a,b,c] = combinacoes[i];
-                    if (casas[a].textContent === jogador && 
-                        casas[b].textContent === jogador &&
-                        casas[c].textContent === jogador){
-                            return true;
-                    } else{
-                        return false;
+            // --- Lógica Principal do Jogo ---
+
+            // Função chamada ao clicar em uma casa
+            function cliqueCasa(event) {
+                const casa = event.target;
+                const index = parseInt(casa.getAttribute('data-index'));
+
+                // Condição para garantir que: 
+                // 1. O jogo ainda esteja ativo
+                // 2. A casa clicada esteja vazia
+                if (tabuleiro[index] === null && jogoAtivo) {
+                    // 1. Atualiza o estado lógico
+                    tabuleiro[index] = jogadorAtual;
+                    // 2. Atualiza o DOM (visual)
+                    casa.textContent = jogadorAtual;
+                    
+                    // 3. Checa o resultado
+                    if (checarResultado()) {
+                        // Se houver vencedor ou empate, o fluxo é encerrado na função checarResultado
+                        return;
                     }
-                        
+
+                    // 4. Troca o jogador
+                    trocarJogador();
                 }
             }
 
-            //uma ideia boa é de add o botao de reiniciar e o mostrador de player se é o X ou o O
+            // Checa se houve vitória ou empate
+            function checarResultado() {
+                let venceu = false;
+                let combinacaoVencedora = [];
+
+                // Verifica todas as combinações vencedoras
+                for (let i = 0; i < combinacoesVencedoras.length; i++) {
+                    const [a, b, c] = combinacoesVencedoras[i];
+                    
+                    if (tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]) {
+                        venceu = true;
+                        combinacaoVencedora = [a, b, c];
+                        break; // Sai do loop assim que encontrar uma combinação vencedora
+                    }
+                }
+
+                if (venceu) {
+                    finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
+                    destacarVitoria(combinacaoVencedora);
+                    return true;
+                } 
+                
+                // Checa por Empate (se não venceu e o tabuleiro está cheio)
+                if (!tabuleiro.includes(null)) {
+                    finalizarJogo("Empate! 🤝");
+                    return true;
+                }
+
+                return false; // O jogo continua
+            }
+            
+            // Troca o jogador atual e atualiza o placar
+            function trocarJogador() {
+                jogadorAtual = (jogadorAtual === "X") ? "O" : "X";
+                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+            }
+            
+            // Finaliza o jogo (atualiza o status e desativa o clique)
+            function finalizarJogo(mensagem) {
+                statusDisplay.textContent = mensagem;
+                jogoAtivo = false;
+            }
+
+            // Destaca as casas da combinação vencedora
+            function destacarVitoria(combinacao) {
+                combinacao.forEach(index => {
+                    casas[index].classList.add('vencedora');
+                });
+            }
+
+            // Reinicia o jogo para o estado inicial
+            function reiniciarJogo() {
+                tabuleiro.fill(null); // Limpa o estado lógico
+                jogadorAtual = "X";   // Começa com 'X' novamente
+                jogoAtivo = true;     // Ativa o jogo
+                
+                // Limpa o visual do tabuleiro
+                casas.forEach(casa => {
+                    casa.textContent = "";
+                    casa.classList.remove('vencedora');
+                });
+                
+                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+            }
+
+            // Chama a função inicializadora para configurar o jogo ao carregar a página
+            inicializarJogo();
 
         </script>
     </body>
