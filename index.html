@@ -14,7 +14,7 @@
                 font-family: 'Patrick Hand', cursive;
                 margin: auto;
                 position: relative;
-                text-align: center; /* Centralização geral para os novos elementos */
+                text-align: center;
             }
             .casa{
                 background-color: #E3D9C9;
@@ -161,6 +161,8 @@
             <button id="reiniciar">Reiniciar Jogo</button>
         </div>
 
+        <audio id="musicaFundo" src="caminho/para/seu/som/musica_fundo.mp3" loop preload="auto"></audio>
+        
         <audio id="somVitoria" src="caminho/para/seu/som/vitoria.mp3" preload="auto"></audio> 
         
         <script>
@@ -171,12 +173,13 @@
             const scoreXDisplay = document.getElementById("scoreX");
             const scoreODisplay = document.getElementById("scoreO");
             const somVitoria = document.getElementById("somVitoria");
+            const musicaFundo = document.getElementById("musicaFundo"); // Nova referência
 
             // Variáveis de estado do jogo e placar
             let tabuleiro = Array(9).fill(null);
             let jogadorAtual = "X";
             let jogoAtivo = true;
-            let placar = { 'X': 0, 'O': 0 }; // Novo objeto para armazenar o placar
+            let placar = { 'X': 0, 'O': 0 };
 
             // Combinações vencedoras (índices no array 'tabuleiro')
             const combinacoesVencedoras = [
@@ -187,126 +190,4 @@
 
             // Inicialização: Adiciona event listeners e atualiza o placar
             function inicializarJogo() {
-                casas.forEach((casa, index) =>  {
-                    casa.setAttribute('data-index', index);
-                    casa.addEventListener('click', cliqueCasa);
-                    casa.textContent = "";
-                    casa.classList.remove('vencedora');
-                });
-                botaoReiniciar.addEventListener('click', reiniciarJogo);
-                // Inicia o placar e o status
-                atualizarPlacarVisual();
-                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
-            }
-
-            // --- Lógica Principal do Jogo ---
-
-            function cliqueCasa(event) {
-                const casa = event.target;
-                const index = parseInt(casa.getAttribute('data-index'));
-
-                if (tabuleiro[index] === null && jogoAtivo) {
-                    tabuleiro[index] = jogadorAtual;
-                    casa.textContent = jogadorAtual;
-                    
-                    if (checarResultado()) {
-                        return;
-                    }
-
-                    trocarJogador();
-                }
-            }
-
-            function checarResultado() {
-                let venceu = false;
-                let combinacaoVencedora = [];
-
-                for (let i = 0; i < combinacoesVencedoras.length; i++) {
-                    const [a, b, c] = combinacoesVencedoras[i];
-                    
-                    if (tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]) {
-                        venceu = true;
-                        combinacaoVencedora = [a, b, c];
-                        break;
-                    }
-                }
-
-                if (venceu) {
-                    // 1. Atualiza o placar
-                    placar[jogadorAtual]++;
-                    atualizarPlacarVisual();
-                    
-                    // 2. Toca o som
-                    tocarSomVitoria();
-                    
-                    // 3. Finaliza
-                    finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
-                    destacarVitoria(combinacaoVencedora);
-                    return true;
-                } 
-                
-                // Checa por Empate
-                if (!tabuleiro.includes(null)) {
-                    finalizarJogo("Empate! 🤝");
-                    return true;
-                }
-
-                return false;
-            }
-            
-            function trocarJogador() {
-                jogadorAtual = (jogadorAtual === "X") ? "O" : "X";
-                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
-            }
-            
-            function finalizarJogo(mensagem) {
-                statusDisplay.textContent = mensagem;
-                jogoAtivo = false;
-            }
-
-            function destacarVitoria(combinacao) {
-                combinacao.forEach(index => {
-                    casas[index].classList.add('vencedora');
-                });
-            }
-            
-            // --- Novas Funções ---
-
-            // Atualiza a exibição do placar (X: 0, O: 0)
-            function atualizarPlacarVisual() {
-                scoreXDisplay.textContent = `X: ${placar.X}`;
-                scoreODisplay.textContent = `O: ${placar.O}`;
-            }
-
-            // Toca o som de vitória
-            function tocarSomVitoria() {
-                if (somVitoria) {
-                    somVitoria.pause(); // Para caso esteja tocando
-                    somVitoria.currentTime = 0; // Volta para o início
-                    somVitoria.play().catch(error => {
-                        // Captura e exibe erro caso o navegador bloqueie o autoplay
-                        console.error("Erro ao tentar tocar o áudio. Tente interagir com a página primeiro.", error);
-                    });
-                }
-            }
-
-            // Reinicia o jogo (resetando apenas o tabuleiro e o estado)
-            function reiniciarJogo() {
-                tabuleiro.fill(null);
-                jogadorAtual = "X";
-                jogoAtivo = true;
-                
-                casas.forEach(casa => {
-                    casa.textContent = "";
-                    casa.classList.remove('vencedora');
-                });
-                
-                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
-            }
-
-            // Inicia o jogo
-            inicializarJogo();
-
-        </script>
-    </body>
-</html>
+                casas.forEach((casa, index) =>
