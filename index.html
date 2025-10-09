@@ -162,7 +162,6 @@
         </div>
 
         <audio id="musicaFundo" src="caminho/para/seu/som/musica_fundo.mp3" loop preload="auto"></audio>
-        
         <audio id="somVitoria" src="caminho/para/seu/som/vitoria.mp3" preload="auto"></audio> 
         
         <script>
@@ -173,13 +172,14 @@
             const scoreXDisplay = document.getElementById("scoreX");
             const scoreODisplay = document.getElementById("scoreO");
             const somVitoria = document.getElementById("somVitoria");
-            const musicaFundo = document.getElementById("musicaFundo"); // Nova referência
+            const musicaFundo = document.getElementById("musicaFundo"); 
 
             // Variáveis de estado do jogo e placar
             let tabuleiro = Array(9).fill(null);
             let jogadorAtual = "X";
             let jogoAtivo = true;
             let placar = { 'X': 0, 'O': 0 };
+            let musicaIniciada = false; // Novo controle
 
             // Combinações vencedoras (índices no array 'tabuleiro')
             const combinacoesVencedoras = [
@@ -188,6 +188,148 @@
                 [0, 4, 8], [2, 4, 6]
             ];
 
-            // Inicialização: Adiciona event listeners e atualiza o placar
+            // Inicialização
             function inicializarJogo() {
-                casas.forEach((casa, index) =>
+                casas.forEach((casa, index) =>  {
+                    casa.setAttribute('data-index', index);
+                    casa.addEventListener('click', cliqueCasa);
+                    casa.textContent = "";
+                    casa.classList.remove('vencedora');
+                });
+                botaoReiniciar.addEventListener('click', reiniciarJogo);
+                
+                // Removemos o chamar da função iniciarMusicaAposInteracao()
+                // A música será iniciada no primeiro clique da casa.
+
+                atualizarPlacarVisual();
+                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+            }
+            
+            // --- Controle de Áudio ---
+
+            function tocarMusicaFundo() {
+                if (musicaFundo) {
+                    musicaFundo.volume = 0.3; 
+                    musicaFundo.play().catch(error => {
+                        console.log("Música de fundo bloqueada. Interaja com a página.", error);
+                    });
+                }
+            }
+            
+            function tocarSomVitoria() {
+                if (somVitoria) {
+                    // Pausa a música de fundo rapidamente para o som de vitória se destacar
+                    if(musicaIniciada) musicaFundo.volume = 0.1; 
+                    
+                    somVitoria.pause();
+                    somVitoria.currentTime = 0;
+                    somVitoria.play().then(() => {
+                        // Após o som de vitória terminar, volta o volume da música
+                        somVitoria.onended = () => {
+                            if(musicaIniciada) musicaFundo.volume = 0.3;
+                            somVitoria.onended = null;
+                        };
+                    }).catch(error => {
+                        console.error("Erro ao tentar tocar o áudio de vitória.", error);
+                        if(musicaIniciada) musicaFundo.volume = 0.3;
+                    });
+                }
+            }
+
+
+            // --- Lógica Principal do Jogo (AGORA COM CORREÇÃO DA MÚSICA) ---
+
+            function cliqueCasa(event) {
+                // TENTA INICIAR A MÚSICA NO PRIMEIRO CLIQUE VÁLIDO DE UMA CASA
+                if (!musicaIniciada) {
+                    tocarMusicaFundo();
+                    musicaIniciada = true;
+                }
+                
+                const casa = event.target;
+                const index = parseInt(casa.getAttribute('data-index'));
+
+                if (tabuleiro[index] === null && jogoAtivo) {
+                    tabuleiro[index] = jogadorAtual;
+                    casa.textContent = jogadorAtual;
+                    
+                    if (checarResultado()) {
+                        return;
+                    }
+
+                    trocarJogador();
+                }
+            }
+
+            function checarResultado() {
+                let venceu = false;
+                let combinacaoVencedora = [];
+
+                for (let i = 0; i < combinacoesVencedoras.length; i++) {
+                    const [a, b, c] = combinacoesVencedoras[i];
+                    
+                    if (tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]) {
+                        venceu = true;
+                        combinacaoVencedora = [a, b, c];
+                        break;
+                    }
+                }
+
+                if (venceu) {
+                    placar[jogadorAtual]++;
+                    atualizarPlacarVisual();
+                    tocarSomVitoria();
+                    finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
+                    destacarVitoria(combinacaoVencedora);
+                    return true;
+                } 
+                
+                // Checa por Empate
+                if (!tabuleiro.includes(null)) {
+                    finalizarJogo("Empate! 🤝");
+                    return true;
+                }
+
+                return false;
+            }
+            
+            function trocarJogador() {
+                jogadorAtual = (jogadorAtual === "X") ? "O" : "X";
+                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+            }
+            
+            function finalizarJogo(mensagem) {
+                statusDisplay.textContent = mensagem;
+                jogoAtivo = false;
+            }
+
+            function destacarVitoria(combinacao) {
+                combinacao.forEach(index => {
+                    casas[index].classList.add('vencedora');
+                });
+            }
+            
+            function atualizarPlacarVisual() {
+                scoreXDisplay.textContent = `X: ${placar.X}`;
+                scoreODisplay.textContent = `O: ${placar.O}`;
+            }
+
+            function reiniciarJogo() {
+                tabuleiro.fill(null);
+                jogadorAtual = "X";
+                jogoAtivo = true;
+                
+                casas.forEach(casa => {
+                    casa.textContent = "";
+                    casa.classList.remove('vencedora');
+                });
+                
+                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+            }
+
+            // Inicia o jogo
+            inicializarJogo();
+
+        </script>
+    </body>
+</html>
