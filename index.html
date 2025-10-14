@@ -162,7 +162,10 @@
         </div>
 
         <audio id="musicaFundo" src="caminho/para/seu/som/musica_fundo.mp3" loop preload="auto"></audio>
-        <audio id="somVitoria" src="caminho/para/seu/som/vitoria.mp3" preload="auto"></audio> 
+        <audio id="somClique" src="botaozinho.mp3" preload="auto"></audio>
+        <audio id="somVitoria" src="vitoria.mp3" preload="auto"></audio> 
+        <audio id="somDerrota" src="nao-chorax_a5hD48K.mp3" preload="auto"></audio>
+
         
         <script>
             // Referências aos elementos do DOM
@@ -171,8 +174,12 @@
             const botaoReiniciar = document.getElementById("reiniciar");
             const scoreXDisplay = document.getElementById("scoreX");
             const scoreODisplay = document.getElementById("scoreO");
-            const somVitoria = document.getElementById("somVitoria");
+
+            // REFERÊNCIAS ATUALIZADAS PARA OS ÁUDIOS
             const musicaFundo = document.getElementById("musicaFundo"); 
+            const somClique = document.getElementById("somClique");
+            const somVitoria = document.getElementById("somVitoria");
+            const somDerrota = document.getElementById("somDerrota");
 
             // Variáveis de estado do jogo e placar
             let tabuleiro = Array(9).fill(null);
@@ -202,45 +209,57 @@
                 statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
             }
             
-            // --- Controle de Áudio (Atualizado com tratamento de erro) ---
+            // --- Controle de Áudio (Atualizado com funções de todos os áudios) ---
 
-            function tocarMusicaFundo() {
-                if (musicaFundo) {
-                    musicaFundo.volume = 0.3;
-                    const playPromise = musicaFundo.play(); // Pega a Promessa de reprodução
+            function tocarAudio(audioElement, volume = 1.0) {
+                if (audioElement) {
+                    audioElement.volume = volume;
+                    audioElement.pause();
+                    audioElement.currentTime = 0;
+                    const playPromise = audioElement.play(); 
 
-                    // Trata a Promessa para verificar se o áudio foi bloqueado
                     if (playPromise !== undefined) {
-                        playPromise.then(() => {
-                            // Sucesso na reprodução
-                        }).catch(error => {
-                            // Falha: O navegador bloqueou o áudio (autoplay)
-                            console.error("ERRO DE ÁUDIO: O navegador bloqueou a reprodução automática. Verifique se o caminho do arquivo está correto e se as configurações de mídia permitem áudio.", error);
+                        playPromise.catch(error => {
+                            console.error(`ERRO DE ÁUDIO: Falha ao tentar tocar ${audioElement.id}. Verifique se o caminho do arquivo está correto e as configurações de mídia.`, error);
                         });
                     }
                 }
             }
             
-            function tocarSomVitoria() {
-                if (somVitoria) {
-                    // Pausa a música de fundo e ajusta o volume
-                    if(musicaIniciada) musicaFundo.volume = 0.1; 
-                    
-                    somVitoria.pause();
-                    somVitoria.currentTime = 0;
-                    somVitoria.play().then(() => {
-                        // Após o som de vitória terminar, volta o volume da música
-                        somVitoria.onended = () => {
-                            if(musicaIniciada) musicaFundo.volume = 0.3;
-                            somVitoria.onended = null;
-                        };
-                    }).catch(error => {
-                        console.error("Erro ao tentar tocar o áudio de vitória.", error);
-                        if(musicaIniciada) musicaFundo.volume = 0.3;
-                    });
+            function tocarMusicaFundo() {
+                if (musicaFundo) {
+                    musicaFundo.volume = 0.3;
+                    const playPromise = musicaFundo.play(); 
+
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.error("ERRO DE ÁUDIO: O navegador bloqueou a reprodução automática da música. Tente interagir com a página primeiro.", error);
+                        });
+                    }
                 }
             }
 
+            function tocarSomClique() {
+                tocarAudio(somClique, 0.7); // Toca o som do botão
+            }
+            
+            function tocarSomVitoria() {
+                if (musicaIniciada) musicaFundo.volume = 0.1; // Diminui a música de fundo
+                tocarAudio(somVitoria, 1.0);
+                somVitoria.onended = () => {
+                    if (musicaIniciada) musicaFundo.volume = 0.3; // Volta o volume após o som
+                    somVitoria.onended = null;
+                };
+            }
+
+            function tocarSomDerrota() {
+                if (musicaIniciada) musicaFundo.volume = 0.1; // Diminui a música de fundo
+                tocarAudio(somDerrota, 1.0);
+                somDerrota.onended = () => {
+                    if (musicaIniciada) musicaFundo.volume = 0.3; // Volta o volume após o som
+                    somDerrota.onended = null;
+                };
+            }
 
             // --- Lógica Principal do Jogo ---
 
@@ -255,6 +274,9 @@
                 const index = parseInt(casa.getAttribute('data-index'));
 
                 if (tabuleiro[index] === null && jogoAtivo) {
+                    // TOCA SOM DO CLIQUE AO FAZER UM MOVIMENTO VÁLIDO
+                    tocarSomClique(); 
+                    
                     tabuleiro[index] = jogadorAtual;
                     casa.textContent = jogadorAtual;
                     
@@ -283,14 +305,15 @@
                 if (venceu) {
                     placar[jogadorAtual]++;
                     atualizarPlacarVisual();
-                    tocarSomVitoria();
+                    tocarSomVitoria(); // TOCA SOM DE VITÓRIA
                     finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
                     destacarVitoria(combinacaoVencedora);
                     return true;
                 } 
                 
-                // Checa por Empate
+                // Checa por Empate (Condição de "perder" o jogo)
                 if (!tabuleiro.includes(null)) {
+                    tocarSomDerrota(); // TOCA SOM DE DERROTA (EMPATE)
                     finalizarJogo("Empate! 🤝");
                     return true;
                 }
