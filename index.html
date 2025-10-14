@@ -161,7 +161,6 @@
             <button id="reiniciar">Reiniciar Jogo</button>
         </div>
 
-        <audio id="musicaFundo" src="caminho/para/seu/som/musica_fundo.mp3" loop preload="auto"></audio>
         <audio id="somClique" src="botaozinho.mp3" preload="auto"></audio>
         <audio id="somVitoria" src="vitoria.mp3" preload="auto"></audio> 
         <audio id="somDerrota" src="nao-chorax_a5hD48K.mp3" preload="auto"></audio>
@@ -176,7 +175,6 @@
             const scoreODisplay = document.getElementById("scoreO");
 
             // REFERÊNCIAS ATUALIZADAS PARA OS ÁUDIOS
-            const musicaFundo = document.getElementById("musicaFundo"); 
             const somClique = document.getElementById("somClique");
             const somVitoria = document.getElementById("somVitoria");
             const somDerrota = document.getElementById("somDerrota");
@@ -226,10 +224,6 @@
                 }
             }
             
-            function tocarMusicaFundo() {
-                if (musicaFundo) {
-                    musicaFundo.volume = 0.3;
-                    const playPromise = musicaFundo.play(); 
 
                     if (playPromise !== undefined) {
                         playPromise.catch(error => {
