@@ -202,20 +202,6 @@
         statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
     }
 
-    function tocarAudio(audioElement, volume = 1.0) {
-        if (audioElement) {
-            audioElement.volume = volume;
-            audioElement.pause();
-            audioElement.currentTime = 0;
-            const playPromise = audioElement.play();
-
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.error(`ERRO DE ÁUDIO: Falha ao tentar tocar ${audioElement.id}.`, error);
-                });
-            }
-        }
-    }
 
     function tocarSomClique() {
         tocarAudio(somClique, 0.7);
