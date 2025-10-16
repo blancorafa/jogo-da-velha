@@ -1,357 +1,317 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Jogo da Velha</title>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Patrick+Hand&display=swap');
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Velha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Patrick+Hand&display=swap');
 
-            body {
-                background-color: #ffe6a7;
-                background-image: url('https://www.transparenttextures.com/patterns/az-subtle.png');
-                color: #5C4033;
-                font-family: 'Patrick Hand', cursive;
-                margin: auto;
-                position: relative;
-                text-align: center;
+        body {
+            background-color: #ffe6a7;
+            background-image: url('https://www.transparenttextures.com/patterns/az-subtle.png');
+            color: #5C4033;
+            font-family: 'Patrick Hand', cursive;
+            margin: auto;
+            position: relative;
+            text-align: center;
+        }
+
+        .casa {
+            background-color: #E3D9C9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: pointer;
+            border: 4px solid #A66352;
+            border-radius: 10px;
+            color: #A66352;
+            font-family: 'Gochi Hand', cursive;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .casa:hover {
+            transform: scale(0.95);
+            background-color: #ebebc5;
+            border-color: #a1887f;
+        }
+
+        .vencedora {
+            background-color: #a3c9a8;
+        }
+
+        .tabuleiro {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 15px;
+            margin: 20px auto;
+            width: max-content;
+            padding: 10px;
+            border: 7px dashed #A66352;
+            background-color: #faebd7;
+            border-radius: 15px;
+        }
+
+        .titulo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 2.5rem;
+            color: #A66352;
+            border: 5px dashed #A66352;
+            border-radius: 20px;
+            width: max-content;
+            margin: 15px auto;
+            padding: 10px;
+            background-color: #d4a373;
+            margin-top: 40px;
+            margin-bottom: 25px;
+        }
+
+        .img1 {
+            display: flex;
+            width: 350px;
+            float: left;
+            transform: scaleX(-1);
+            pointer-events: none;
+        }
+
+        .img2 {
+            display: flex;
+            width: 350px;
+            float: right;
+            pointer-events: none;
+        }
+
+        .controles {
+            margin: 20px auto;
+            width: max-content;
+            padding: 15px;
+            border: 4px solid #A66352;
+            border-radius: 10px;
+            background-color: #faebd7;
+        }
+
+        #status {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #5C4033;
+            font-family: 'Patrick Hand', cursive;
+        }
+
+        #reiniciar {
+            padding: 10px 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background-color: #A66352;
+            color: #faebd7;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Gochi Hand', cursive;
+            transition: background-color 0.2s;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #reiniciar:hover {
+            background-color: #8c5243;
+        }
+
+        .placar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            font-family: 'Gochi Hand', cursive;
+            font-size: 2rem;
+            color: #A66352;
+            width: max-content;
+            margin: 15px auto;
+            padding: 10px 20px;
+            border: 3px solid #A66352;
+            border-radius: 10px;
+            background-color: #faebd7;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="titulo">Jogo da Velha</h1>
+    <img src="imagens/velha-Photoroom.png" class="img1" alt="uma velhinha em desenho cartoon">
+    <img src="imagens/velha-Photoroom.png" class="img2" alt="uma velhinha em desenho cartoon">
+
+    <div class="placar">
+        <span id="scoreX">X: 0</span>
+        <span id="scoreO">O: 0</span>
+    </div>
+
+    <div class="tabuleiro">
+        <div class="casa" data-index="0"></div>
+        <div class="casa" data-index="1"></div>
+        <div class="casa" data-index="2"></div>
+        <div class="casa" data-index="3"></div>
+        <div class="casa" data-index="4"></div>
+        <div class="casa" data-index="5"></div>
+        <div class="casa" data-index="6"></div>
+        <div class="casa" data-index="7"></div>
+        <div class="casa" data-index="8"></div>
+    </div>
+
+    <div class="controles">
+        <div id="status">Vez do Jogador: X</div>
+        <button id="reiniciar">Reiniciar Jogo</button>
+    </div>
+
+    <audio id="somClique" src="botaozinho.mp3" preload="auto"></audio>
+    <audio id="somVitoria" src="vitoria.mp3" preload="auto"></audio> 
+    <audio id="somDerrota" src="nao-chorax_a5hD48K.mp3" preload="auto"></audio>
+
+    <script>
+        const casas = document.querySelectorAll(".casa");
+        const statusDisplay = document.getElementById("status");
+        const botaoReiniciar = document.getElementById("reiniciar");
+        const scoreXDisplay = document.getElementById("scoreX");
+        const scoreODisplay = document.getElementById("scoreO");
+
+        const somClique = document.getElementById("somClique");
+        const somVitoria = document.getElementById("somVitoria");
+        const somDerrota = document.getElementById("somDerrota");
+
+        let tabuleiro = Array(9).fill(null);
+        let jogadorAtual = "X";
+        let jogoAtivo = true;
+        let placar = { 'X': 0, 'O': 0 };
+
+        const combinacoesVencedoras = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        function inicializarJogo() {
+            casas.forEach((casa, index) => {
+                casa.setAttribute('data-index', index);
+                casa.addEventListener('click', cliqueCasa);
+                casa.textContent = "";
+                casa.classList.remove('vencedora');
+            });
+            botaoReiniciar.addEventListener('click', reiniciarJogo);
+            atualizarPlacarVisual();
+            statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+        }
+
+        function tocarAudio(audioElement, volume = 1.0) {
+            if (audioElement) {
+                audioElement.volume = volume;
+                audioElement.pause();
+                audioElement.currentTime = 0;
+                const playPromise = audioElement.play();
+
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error(`ERRO DE ÁUDIO: Falha ao tentar tocar ${audioElement.id}.`, error);
+                    });
+                }
             }
-            .casa{
-                background-color: #E3D9C9;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 3rem;
-                cursor: pointer;
-                border: 4px solid #A66352;
-                border-radius: 10px;
-                color: #A66352;
-                font-family: 'Gochi Hand', cursive;
-                box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-                transition: all 0.2s ease-in-out;
+        }
+
+        function tocarSomClique() {
+            tocarAudio(somClique, 0.7);
+        }
+
+        function tocarSomVitoria() {
+            tocarAudio(somVitoria, 1.0);
+        }
+
+        function tocarSomDerrota() {
+            tocarAudio(somDerrota, 1.0);
+        }
+
+        function cliqueCasa(event) {
+            const casa = event.target;
+            const index = parseInt(casa.getAttribute('data-index'));
+
+            if (tabuleiro[index] === null && jogoAtivo) {
+                tocarSomClique();
+
+                tabuleiro[index] = jogadorAtual;
+                casa.textContent = jogadorAtual;
+
+                if (checarResultado()) return;
+
+                trocarJogador();
             }
-            .casa:hover{
-                transform: scale(0.95);
-                background-color: #ebebc5;
-                border-color: #a1887f;
-            }
-            /* Estilo para destacar a casa vencedora */
-            .vencedora {
-                background-color: #a3c9a8; /* Cor de destaque para a vitória */
+        }
+
+        function checarResultado() {
+            let venceu = false;
+            let combinacaoVencedora = [];
+
+            for (let i = 0; i < combinacoesVencedoras.length; i++) {
+                const [a, b, c] = combinacoesVencedoras[i];
+
+                if (tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]) {
+                    venceu = true;
+                    combinacaoVencedora = [a, b, c];
+                    break;
+                }
             }
 
-            .tabuleiro{
-                display: grid;
-                grid-template-columns: repeat(3,100px);
-                grid-template-rows: repeat(3,100px);
-                gap: 15px;
-                margin: 20px auto;
-                width: max-content;
-                padding: 10px;
-                border: 7px dashed #A66352;
-                background-color: #faebd7;
-                border-radius: 15px;
-            }
-            .titulo{
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-family: 'Patrick Hand', cursive;
-                font-size: 2.5rem;
-                color: #A66352;
-                border: 5px dashed #A66352;
-                border-radius: 20px;
-                width: max-content;
-                margin: 15px auto;
-                padding: 10px;
-                background-color: #d4a373;
-                margin-top: 40px;
-                margin-bottom: 25px;
-            }
-            .img1{
-                display: flex;
-                width: 350px;
-                float: left;
-                transform: scaleX(-1);
-                pointer-events: none;
-            }
-            .img2{
-                display: flex;
-                width: 350px ;
-                float: right;
-                pointer-events: none;
-            }
-
-            /* Estilos adicionados para os novos elementos de controle e placar */
-            .controles {
-                margin: 20px auto;
-                width: max-content;
-                padding: 15px;
-                border: 4px solid #A66352;
-                border-radius: 10px;
-                background-color: #faebd7;
-            }
-
-            #status {
-                font-size: 1.8rem;
-                margin-bottom: 10px;
-                color: #5C4033;
-                font-family: 'Patrick Hand', cursive;
-            }
-
-            #reiniciar {
-                padding: 10px 20px;
-                font-size: 1.5rem;
-                cursor: pointer;
-                background-color: #A66352;
-                color: #faebd7;
-                border: none;
-                border-radius: 5px;
-                font-family: 'Gochi Hand', cursive;
-                transition: background-color 0.2s;
-                box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-            }
-
-            #reiniciar:hover {
-                background-color: #8c5243;
-            }
-            
-            /* Novo estilo para o Placar de Vitórias */
-            .placar {
-                display: flex;
-                justify-content: center;
-                gap: 40px;
-                margin-top: 20px;
-                font-family: 'Gochi Hand', cursive;
-                font-size: 2rem;
-                color: #A66352;
-                width: max-content;
-                margin: 15px auto;
-                padding: 10px 20px;
-                border: 3px solid #A66352;
-                border-radius: 10px;
-                background-color: #faebd7;
-            }
-        </style>
-    </head>
-    <body>
-        <h1 class="titulo">Jogo da Velha</h1>
-        <img src="imagens/velha-Photoroom.png" class="img1" alt="uma velhinha em desenho cartoon">
-        <img src="imagens/velha-Photoroom.png" class="img2" alt="uma velhinha em desenho cartoon">
-        
-        <div class="placar">
-            <span id="scoreX">X: 0</span>
-            <span id="scoreO">O: 0</span>
-        </div>
-
-        <div class="tabuleiro">
-            <div class="casa" data-index="0"></div>
-            <div class="casa" data-index="1"></div>
-            <div class="casa" data-index="2"></div>
-            <div class="casa" data-index="3"></div>
-            <div class="casa" data-index="4"></div>
-            <div class="casa" data-index="5"></div>
-            <div class="casa" data-index="6"></div>
-            <div class="casa" data-index="7"></div>
-            <div class="casa" data-index="8"></div>
-        </div>
-        
-        <div class="controles">
-            <div id="status">Vez do Jogador: X</div>
-            <button id="reiniciar">Reiniciar Jogo</button>
-        </div>
-
-        <audio id="somClique" src="botaozinho.mp3" preload="auto"></audio>
-        <audio id="somVitoria" src="vitoria.mp3" preload="auto"></audio> 
-        <audio id="somDerrota" src="nao-chorax_a5hD48K.mp3" preload="auto"></audio>
-
-        
-        <script>
-            // Referências aos elementos do DOM
-            const casas = document.querySelectorAll(".casa");
-            const statusDisplay = document.getElementById("status");
-            const botaoReiniciar = document.getElementById("reiniciar");
-            const scoreXDisplay = document.getElementById("scoreX");
-            const scoreODisplay = document.getElementById("scoreO");
-
-            // REFERÊNCIAS ATUALIZADAS PARA OS ÁUDIOS
-            const somClique = document.getElementById("somClique");
-            const somVitoria = document.getElementById("somVitoria");
-            const somDerrota = document.getElementById("somDerrota");
-
-            // Variáveis de estado do jogo e placar
-            let tabuleiro = Array(9).fill(null);
-            let jogadorAtual = "X";
-            let jogoAtivo = true;
-            let placar = { 'X': 0, 'O': 0 };
-            let musicaIniciada = false;
-
-            // Combinações vencedoras (índices no array 'tabuleiro')
-            const combinacoesVencedoras = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8],
-                [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                [0, 4, 8], [2, 4, 6]
-            ];
-
-            // Inicialização
-            function inicializarJogo() {
-                casas.forEach((casa, index) =>  {
-                    casa.setAttribute('data-index', index);
-                    casa.addEventListener('click', cliqueCasa);
-                    casa.textContent = "";
-                    casa.classList.remove('vencedora');
-                });
-                botaoReiniciar.addEventListener('click', reiniciarJogo);
-                
+            if (venceu) {
+                placar[jogadorAtual]++;
                 atualizarPlacarVisual();
-                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
-            }
-            
-            // --- Controle de Áudio (Atualizado com funções de todos os áudios) ---
-
-            function tocarAudio(audioElement, volume = 1.0) {
-                if (audioElement) {
-                    audioElement.volume = volume;
-                    audioElement.pause();
-                    audioElement.currentTime = 0;
-                    const playPromise = audioElement.play(); 
-
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            console.error(`ERRO DE ÁUDIO: Falha ao tentar tocar ${audioElement.id}. Verifique se o caminho do arquivo está correto e as configurações de mídia.`, error);
-                        });
-                    }
-                }
-            }
-            
-
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            console.error("ERRO DE ÁUDIO: O navegador bloqueou a reprodução automática da música. Tente interagir com a página primeiro.", error);
-                        });
-                    }
-                }
+                tocarSomVitoria();
+                finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
+                destacarVitoria(combinacaoVencedora);
+                return true;
             }
 
-            function tocarSomClique() {
-                tocarAudio(somClique, 0.7); // Toca o som do botão
-            }
-            
-            function tocarSomVitoria() {
-                if (musicaIniciada) musicaFundo.volume = 0.1; // Diminui a música de fundo
-                tocarAudio(somVitoria, 1.0);
-                somVitoria.onended = () => {
-                    if (musicaIniciada) musicaFundo.volume = 0.3; // Volta o volume após o som
-                    somVitoria.onended = null;
-                };
+            if (!tabuleiro.includes(null)) {
+                tocarSomDerrota();
+                finalizarJogo("Empate! 🤝");
+                return true;
             }
 
-            function tocarSomDerrota() {
-                if (musicaIniciada) musicaFundo.volume = 0.1; // Diminui a música de fundo
-                tocarAudio(somDerrota, 1.0);
-                somDerrota.onended = () => {
-                    if (musicaIniciada) musicaFundo.volume = 0.3; // Volta o volume após o som
-                    somDerrota.onended = null;
-                };
-            }
+            return false;
+        }
 
-            // --- Lógica Principal do Jogo ---
+        function trocarJogador() {
+            jogadorAtual = (jogadorAtual === "X") ? "O" : "X";
+            statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+        }
 
-            function cliqueCasa(event) {
-                // TENTA INICIAR A MÚSICA NO PRIMEIRO CLIQUE VÁLIDO DE UMA CASA
-                if (!musicaIniciada) {
-                    tocarMusicaFundo();
-                    musicaIniciada = true;
-                }
-                
-                const casa = event.target;
-                const index = parseInt(casa.getAttribute('data-index'));
+        function finalizarJogo(mensagem) {
+            statusDisplay.textContent = mensagem;
+            jogoAtivo = false;
+        }
 
-                if (tabuleiro[index] === null && jogoAtivo) {
-                    // TOCA SOM DO CLIQUE AO FAZER UM MOVIMENTO VÁLIDO
-                    tocarSomClique(); 
-                    
-                    tabuleiro[index] = jogadorAtual;
-                    casa.textContent = jogadorAtual;
-                    
-                    if (checarResultado()) {
-                        return;
-                    }
+        function destacarVitoria(combinacao) {
+            combinacao.forEach(index => {
+                casas[index].classList.add('vencedora');
+            });
+        }
 
-                    trocarJogador();
-                }
-            }
+        function atualizarPlacarVisual() {
+            scoreXDisplay.textContent = `X: ${placar.X}`;
+            scoreODisplay.textContent = `O: ${placar.O}`;
+        }
 
-            function checarResultado() {
-                let venceu = false;
-                let combinacaoVencedora = [];
+        function reiniciarJogo() {
+            tabuleiro.fill(null);
+            jogadorAtual = "X";
+            jogoAtivo = true;
 
-                for (let i = 0; i < combinacoesVencedoras.length; i++) {
-                    const [a, b, c] = combinacoesVencedoras[i];
-                    
-                    if (tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]) {
-                        venceu = true;
-                        combinacaoVencedora = [a, b, c];
-                        break;
-                    }
-                }
+            casas.forEach(casa => {
+                casa.textContent = "";
+                casa.classList.remove('vencedora');
+            });
 
-                if (venceu) {
-                    placar[jogadorAtual]++;
-                    atualizarPlacarVisual();
-                    tocarSomVitoria(); // TOCA SOM DE VITÓRIA
-                    finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
-                    destacarVitoria(combinacaoVencedora);
-                    return true;
-                } 
-                
-                // Checa por Empate (Condição de "perder" o jogo)
-                if (!tabuleiro.includes(null)) {
-                    tocarSomDerrota(); // TOCA SOM DE DERROTA (EMPATE)
-                    finalizarJogo("Empate! 🤝");
-                    return true;
-                }
+            statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+        }
 
-                return false;
-            }
-            
-            function trocarJogador() {
-                jogadorAtual = (jogadorAtual === "X") ? "O" : "X";
-                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
-            }
-            
-            function finalizarJogo(mensagem) {
-                statusDisplay.textContent = mensagem;
-                jogoAtivo = false;
-            }
-
-            function destacarVitoria(combinacao) {
-                combinacao.forEach(index => {
-                    casas[index].classList.add('vencedora');
-                });
-            }
-            
-            function atualizarPlacarVisual() {
-                scoreXDisplay.textContent = `X: ${placar.X}`;
-                scoreODisplay.textContent = `O: ${placar.O}`;
-            }
-
-            function reiniciarJogo() {
-                tabuleiro.fill(null);
-                jogadorAtual = "X";
-                jogoAtivo = true;
-                
-                casas.forEach(casa => {
-                    casa.textContent = "";
-                    casa.classList.remove('vencedora');
-                });
-                
-                statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
-            }
-
-            // Inicia o jogo
-            inicializarJogo();
-
-        </script>
-    </body>
+        inicializarJogo();
+    </script>
+</body>
 </html>
