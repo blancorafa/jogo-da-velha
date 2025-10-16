@@ -168,150 +168,150 @@
     <audio id="somVitoria" src="vitoria.mp3" preload="auto"></audio> 
     <audio id="somDerrota" src="nao-chorax_a5hD48K.mp3" preload="auto"></audio>
 
-    <script>
-        const casas = document.querySelectorAll(".casa");
-        const statusDisplay = document.getElementById("status");
-        const botaoReiniciar = document.getElementById("reiniciar");
-        const scoreXDisplay = document.getElementById("scoreX");
-        const scoreODisplay = document.getElementById("scoreO");
+<script>
+    const casas = document.querySelectorAll(".casa");
+    const statusDisplay = document.getElementById("status");
+    const botaoReiniciar = document.getElementById("reiniciar");
+    const scoreXDisplay = document.getElementById("scoreX");
+    const scoreODisplay = document.getElementById("scoreO");
 
-        const somClique = document.getElementById("somClique");
-        const somVitoria = document.getElementById("somVitoria");
-        const somDerrota = document.getElementById("somDerrota");
+    const somClique = document.getElementById("somClique");
+    const somVitoria = document.getElementById("somVitoria");
+    const somDerrota = document.getElementById("somDerrota");
 
-        let tabuleiro = Array(9).fill(null);
-        let jogadorAtual = "X";
-        let jogoAtivo = true;
-        let placar = { 'X': 0, 'O': 0 };
+    let tabuleiro = Array(9).fill(null);
+    let jogadorAtual = "X";
+    let jogoAtivo = true;
+    let placar = { 'X': 0, 'O': 0 };
 
-        const combinacoesVencedoras = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-            [0, 4, 8], [2, 4, 6]
-        ];
+    const combinacoesVencedoras = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ];
 
-        function inicializarJogo() {
-            casas.forEach((casa, index) => {
-                casa.setAttribute('data-index', index);
-                casa.addEventListener('click', cliqueCasa);
-                casa.textContent = "";
-                casa.classList.remove('vencedora');
-            });
-            botaoReiniciar.addEventListener('click', reiniciarJogo);
+    function inicializarJogo() {
+        casas.forEach((casa, index) => {
+            casa.setAttribute('data-index', index);
+            casa.addEventListener('click', cliqueCasa);
+            casa.textContent = "";
+            casa.classList.remove('vencedora');
+        });
+        botaoReiniciar.addEventListener('click', reiniciarJogo);
+        atualizarPlacarVisual();
+        statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+    }
+
+    function tocarAudio(audioElement, volume = 1.0) {
+        if (audioElement) {
+            audioElement.volume = volume;
+            audioElement.pause();
+            audioElement.currentTime = 0;
+            const playPromise = audioElement.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error(`ERRO DE ÁUDIO: Falha ao tentar tocar ${audioElement.id}.`, error);
+                });
+            }
+        }
+    }
+
+    function tocarSomClique() {
+        tocarAudio(somClique, 0.7);
+    }
+
+    function tocarSomVitoria() {
+        tocarAudio(somVitoria, 1.0);
+    }
+
+    function tocarSomDerrota() {
+        tocarAudio(somDerrota, 1.0);
+    }
+
+    function cliqueCasa(event) {
+        const casa = event.target;
+        const index = parseInt(casa.getAttribute('data-index'));
+
+        if (tabuleiro[index] === null && jogoAtivo) {
+            tocarSomClique();
+
+            tabuleiro[index] = jogadorAtual;
+            casa.textContent = jogadorAtual;
+
+            if (checarResultado()) return;
+
+            trocarJogador();
+        }
+    }
+
+    function checarResultado() {
+        let venceu = false;
+        let combinacaoVencedora = [];
+
+        for (let i = 0; i < combinacoesVencedoras.length; i++) {
+            const [a, b, c] = combinacoesVencedoras[i];
+
+            if (tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]) {
+                venceu = true;
+                combinacaoVencedora = [a, b, c];
+                break;
+            }
+        }
+
+        if (venceu) {
+            placar[jogadorAtual]++;
             atualizarPlacarVisual();
-            statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+            tocarSomVitoria();
+            finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
+            destacarVitoria(combinacaoVencedora);
+            return true;
         }
 
-        function tocarAudio(audioElement, volume = 1.0) {
-            if (audioElement) {
-                audioElement.volume = volume;
-                audioElement.pause();
-                audioElement.currentTime = 0;
-                const playPromise = audioElement.play();
-
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.error(`ERRO DE ÁUDIO: Falha ao tentar tocar ${audioElement.id}.`, error);
-                    });
-                }
-            }
+        if (!tabuleiro.includes(null)) {
+            tocarSomDerrota();
+            finalizarJogo("Empate! 🤝");
+            return true;
         }
 
-        function tocarSomClique() {
-            tocarAudio(somClique, 0.7);
-        }
+        return false;
+    }
 
-        function tocarSomVitoria() {
-            tocarAudio(somVitoria, 1.0);
-        }
+    function trocarJogador() {
+        jogadorAtual = (jogadorAtual === "X") ? "O" : "X";
+        statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+    }
 
-        function tocarSomDerrota() {
-            tocarAudio(somDerrota, 1.0);
-        }
+    function finalizarJogo(mensagem) {
+        statusDisplay.textContent = mensagem;
+        jogoAtivo = false;
+    }
 
-        function cliqueCasa(event) {
-            const casa = event.target;
-            const index = parseInt(casa.getAttribute('data-index'));
+    function destacarVitoria(combinacao) {
+        combinacao.forEach(index => {
+            casas[index].classList.add('vencedora');
+        });
+    }
 
-            if (tabuleiro[index] === null && jogoAtivo) {
-                tocarSomClique();
+    function atualizarPlacarVisual() {
+        scoreXDisplay.textContent = `X: ${placar.X}`;
+        scoreODisplay.textContent = `O: ${placar.O}`;
+    }
 
-                tabuleiro[index] = jogadorAtual;
-                casa.textContent = jogadorAtual;
+    function reiniciarJogo() {
+        tabuleiro.fill(null);
+        jogadorAtual = "X";
+        jogoAtivo = true;
 
-                if (checarResultado()) return;
+        casas.forEach(casa => {
+            casa.textContent = "";
+            casa.classList.remove('vencedora');
+        });
 
-                trocarJogador();
-            }
-        }
+        statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
+    }
 
-        function checarResultado() {
-            let venceu = false;
-            let combinacaoVencedora = [];
-
-            for (let i = 0; i < combinacoesVencedoras.length; i++) {
-                const [a, b, c] = combinacoesVencedoras[i];
-
-                if (tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]) {
-                    venceu = true;
-                    combinacaoVencedora = [a, b, c];
-                    break;
-                }
-            }
-
-            if (venceu) {
-                placar[jogadorAtual]++;
-                atualizarPlacarVisual();
-                tocarSomVitoria();
-                finalizarJogo(`${jogadorAtual} Venceu! 🎉`);
-                destacarVitoria(combinacaoVencedora);
-                return true;
-            }
-
-            if (!tabuleiro.includes(null)) {
-                tocarSomDerrota();
-                finalizarJogo("Empate! 🤝");
-                return true;
-            }
-
-            return false;
-        }
-
-        function trocarJogador() {
-            jogadorAtual = (jogadorAtual === "X") ? "O" : "X";
-            statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
-        }
-
-        function finalizarJogo(mensagem) {
-            statusDisplay.textContent = mensagem;
-            jogoAtivo = false;
-        }
-
-        function destacarVitoria(combinacao) {
-            combinacao.forEach(index => {
-                casas[index].classList.add('vencedora');
-            });
-        }
-
-        function atualizarPlacarVisual() {
-            scoreXDisplay.textContent = `X: ${placar.X}`;
-            scoreODisplay.textContent = `O: ${placar.O}`;
-        }
-
-        function reiniciarJogo() {
-            tabuleiro.fill(null);
-            jogadorAtual = "X";
-            jogoAtivo = true;
-
-            casas.forEach(casa => {
-                casa.textContent = "";
-                casa.classList.remove('vencedora');
-            });
-
-            statusDisplay.textContent = `Vez do Jogador: ${jogadorAtual}`;
-        }
-
-        inicializarJogo();
+    inicializarJogo();
     </script>
 </body>
 </html>
